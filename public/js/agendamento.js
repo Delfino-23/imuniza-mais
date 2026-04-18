@@ -174,11 +174,23 @@ async function buscarAgendamentoParaAtualizar() {
     }
 }
 
+let isUpdating = false;
+
 async function atualizarAgendamento(e) {
     e.preventDefault();
 
+    if (isUpdating){
+        console.log('Atualização já em andamento...');
+        return;
+    }
+
     const id = document.getElementById('idAgendamentoAtualizar').value;
     const statusId = parseInt(document.getElementById('novoStatusAgendamento').value);
+
+    // Desabilitar o botão
+    const btnSubmit = document.getElementById('button[type="submit"]');
+    if (btnSubmit) btnSubmit.disabled = true;
+    isUpdating = true;
 
     try {
     
@@ -198,6 +210,10 @@ async function atualizarAgendamento(e) {
 
     } catch (erro) {
         mostrarMensagem('mensagemAgendamentoAtualizar', `Erro: ${erro.message}`, 'error');
+    } finally {
+        // Reabilitar o botão
+        if (btnSubmit) btnSubmit.disabled = false;
+        isUpdating = false;
     }
 }
 

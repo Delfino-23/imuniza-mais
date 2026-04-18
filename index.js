@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import Database from 'better-sqlite3'; 
+import './models/index.js'
 
 // Rotas
 import criarCidadaoRouter from './routes/cidadaoRoutes.js';
@@ -183,10 +184,10 @@ app.get('/gestao/dados', (req, res) => {
 
 //ROTAS
 
-app.use('/cidadaos', criarCidadaoRouter(db));
+app.use('/cidadaos', criarCidadaoRouter);
 app.use('/vacinas', criarVacinaRouter(db));
 app.use('/postos', criarPostoRouter(db));
-app.use('/agendamentos', criarAgendamentoRouter(db));
+app.use('/agendamentos', criarAgendamentoRouter);
 
 // Servidor
 app.listen(PORT, () => {
