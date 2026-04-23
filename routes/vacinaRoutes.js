@@ -1,156 +1,171 @@
 import express from 'express';
+import { 
+    atualizarVacina,
+    criarVacina,
+    excluirVacina,
+    listarVacinaPorId,
+    listarVacinas 
+} from '../controllers/vacinaController.js';
 const router = express.Router();
 
-import { capitalizarNome } from '../utils/formatarNome.js'; 
+router.get('/', listarVacinas);
+router.get('/:id', listarVacinaPorId);
+router.post('/', criarVacina);
+router.put('/:id', atualizarVacina);
+router.delete('/:id', excluirVacina);
 
-export default (db) => {
+export default router;
 
-    // ROTA POST para CADASTRAR VACINA E ESTOQUE INICIAL (10 doses)
+// import { capitalizarNome } from '../utils/formatarNome.js'; 
 
-    router.post('/', (req, res) => {
+// export default (db) => {
 
-        const { nome, fabricante, validade, postoId } = req.body; 
+//     // ROTA POST para CADASTRAR VACINA E ESTOQUE INICIAL (10 doses)
+
+//     router.post('/', (req, res) => {
+
+//         const { nome, fabricante, validade, postoId } = req.body; 
         
-        if (!nome || !fabricante || !validade || !postoId) {
-             return res.status(400).json({ error: 'Nome, fabricante, validade e Posto ID são obrigatórios.' });
-        }
+//         if (!nome || !fabricante || !validade || !postoId) {
+//              return res.status(400).json({ error: 'Nome, fabricante, validade e Posto ID são obrigatórios.' });
+//         }
         
-        if (isNaN(parseInt(postoId))) {
-            return res.status(400).json({ error: 'Posto ID deve ser um número válido.' });
-        }
+//         if (isNaN(parseInt(postoId))) {
+//             return res.status(400).json({ error: 'Posto ID deve ser um número válido.' });
+//         }
         
-        try {
+//         try {
         
-            const nomeFormatado = capitalizarNome ? capitalizarNome(nome) : nome;
-            const fabricanteFormatado = capitalizarNome ? capitalizarNome(fabricante) : fabricante;
+//             const nomeFormatado = capitalizarNome ? capitalizarNome(nome) : nome;
+//             const fabricanteFormatado = capitalizarNome ? capitalizarNome(fabricante) : fabricante;
 
-            const result = db.transaction(() => {
+//             const result = db.transaction(() => {
 
-                // 1. INSERIR NA TABELA VACINAS
-                const infoVacina = db.prepare(
-                    'INSERT INTO vacinas (nome, fabricante, validade) VALUES (?, ?, ?)'
-                ).run(nomeFormatado, fabricanteFormatado, validade);
+//                 // 1. INSERIR NA TABELA VACINAS
+//                 const infoVacina = db.prepare(
+//                     'INSERT INTO vacinas (nome, fabricante, validade) VALUES (?, ?, ?)'
+//                 ).run(nomeFormatado, fabricanteFormatado, validade);
                 
-                const newVacinaId = infoVacina.lastInsertRowid;
+//                 const newVacinaId = infoVacina.lastInsertRowid;
                 
-                // 2. INSERIR NA TABELA ESTOQUE (10 doses)
-                db.prepare(`
-                    INSERT INTO estoque (postoId, vacinaId, quantidade) 
-                    VALUES (?, ?, 10)
-                `).run(postoId, newVacinaId);
+//                 // 2. INSERIR NA TABELA ESTOQUE (10 doses)
+//                 db.prepare(`
+//                     INSERT INTO estoque (postoId, vacinaId, quantidade) 
+//                     VALUES (?, ?, 10)
+//                 `).run(postoId, newVacinaId);
 
-                return {
-                    mensagem: 'Vacina cadastrada e 10 doses adicionadas ao estoque do posto.',
-                    idVacina: newVacinaId
-                };
-            })(); 
+//                 return {
+//                     mensagem: 'Vacina cadastrada e 10 doses adicionadas ao estoque do posto.',
+//                     idVacina: newVacinaId
+//                 };
+//             })(); 
 
-            res.status(201).json(result);
+//             res.status(201).json(result);
             
-        } catch (error) {
-            console.error('Erro ao cadastrar vacina/estoque:', error.message);
+//         } catch (error) {
+//             console.error('Erro ao cadastrar vacina/estoque:', error.message);
         
-            if (error.message.includes('FOREIGN KEY constraint failed')) {
-                 return res.status(400).json({ error: 'Erro de dados: Posto ID não existe.', details: error.message });
-            }
-            if (error.message.includes('SQLITE_CONSTRAINT')) {
+//             if (error.message.includes('FOREIGN KEY constraint failed')) {
+//                  return res.status(400).json({ error: 'Erro de dados: Posto ID não existe.', details: error.message });
+//             }
+//             if (error.message.includes('SQLITE_CONSTRAINT')) {
             
-                 return res.status(409).json({ error: 'Vacina duplicada (nome e fabricante).', details: error.message });
-            }
-            res.status(500).json({ error: 'Erro interno no servidor ao cadastrar vacina.', details: error.message });
-        }
-    });
+//                  return res.status(409).json({ error: 'Vacina duplicada (nome e fabricante).', details: error.message });
+//             }
+//             res.status(500).json({ error: 'Erro interno no servidor ao cadastrar vacina.', details: error.message });
+//         }
+//     });
 
-    // GET /vacinas - Listar todas as vacinas
+//     // GET /vacinas - Listar todas as vacinas
     
-    router.get('/', (req, res) => {
-        try {
+//     router.get('/', (req, res) => {
+//         try {
           
-            const vacinas = db.prepare('SELECT id, nome, fabricante, validade FROM vacinas').all();
-            res.status(200).json(vacinas);
-        } catch (error) {
-            console.error('Erro ao listar vacinas:', error);
-            res.status(500).json({ error: 'Erro interno ao listar vacinas.', details: error.message });
-        }
-    });
+//             const vacinas = db.prepare('SELECT id, nome, fabricante, validade FROM vacinas').all();
+//             res.status(200).json(vacinas);
+//         } catch (error) {
+//             console.error('Erro ao listar vacinas:', error);
+//             res.status(500).json({ error: 'Erro interno ao listar vacinas.', details: error.message });
+//         }
+//     });
 
-    // GET /vacinas/:id - Buscar vacina por ID
+//     // GET /vacinas/:id - Buscar vacina por ID
     
-    router.get('/:id', (req, res) => {
-        const { id } = req.params;
-        try {
-            const vacina = db.prepare('SELECT id, nome, fabricante, validade FROM vacinas WHERE id = ?').get(id);
-            if (vacina) {
-                res.status(200).json(vacina);
-            } else {
-                res.status(404).json({ error: 'Vacina não encontrada.' });
-            }
-        } catch (error) {
-            console.error('Erro ao buscar vacina:', error);
-            res.status(500).json({ error: 'Erro interno ao buscar vacina.', details: error.message });
-        }
-    });
+//     router.get('/:id', (req, res) => {
+//         const { id } = req.params;
+//         try {
+//             const vacina = db.prepare('SELECT id, nome, fabricante, validade FROM vacinas WHERE id = ?').get(id);
+//             if (vacina) {
+//                 res.status(200).json(vacina);
+//             } else {
+//                 res.status(404).json({ error: 'Vacina não encontrada.' });
+//             }
+//         } catch (error) {
+//             console.error('Erro ao buscar vacina:', error);
+//             res.status(500).json({ error: 'Erro interno ao buscar vacina.', details: error.message });
+//         }
+//     });
 
-    // PUT /vacinas/:id - Atualizar vacina
+//     // PUT /vacinas/:id - Atualizar vacina
 
-    router.put('/:id', (req, res) => {
-        const { id } = req.params;
-        const { nome, fabricante, validade } = req.body;
+//     router.put('/:id', (req, res) => {
+//         const { id } = req.params;
+//         const { nome, fabricante, validade } = req.body;
         
-        const vacinaAtualizada = {};
-        if (nome) vacinaAtualizada.nome = capitalizarNome ? capitalizarNome(nome) : nome;
-        if (fabricante) vacinaAtualizada.fabricante = capitalizarNome ? capitalizarNome(fabricante) : fabricante;
-        if (validade) vacinaAtualizada.validade = validade;
+//         const vacinaAtualizada = {};
+//         if (nome) vacinaAtualizada.nome = capitalizarNome ? capitalizarNome(nome) : nome;
+//         if (fabricante) vacinaAtualizada.fabricante = capitalizarNome ? capitalizarNome(fabricante) : fabricante;
+//         if (validade) vacinaAtualizada.validade = validade;
 
-        if (Object.keys(vacinaAtualizada).length === 0) {
-            return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido para atualização (nome, fabricante ou validade).' });
-        }
+//         if (Object.keys(vacinaAtualizada).length === 0) {
+//             return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido para atualização (nome, fabricante ou validade).' });
+//         }
 
-        try {
-            const sets = [];
-            const values = [];
+//         try {
+//             const sets = [];
+//             const values = [];
 
-            for (const key in vacinaAtualizada) {
-                sets.push(`${key} = ?`);
-                values.push(vacinaAtualizada[key]);
-            }
-            values.push(id);
+//             for (const key in vacinaAtualizada) {
+//                 sets.push(`${key} = ?`);
+//                 values.push(vacinaAtualizada[key]);
+//             }
+//             values.push(id);
 
-            const sql = `UPDATE vacinas SET ${sets.join(', ')} WHERE id = ?`;
-            const result = db.prepare(sql).run(...values);
+//             const sql = `UPDATE vacinas SET ${sets.join(', ')} WHERE id = ?`;
+//             const result = db.prepare(sql).run(...values);
 
-            if (result.changes > 0) {
-                res.status(200).json({ message: 'Vacina atualizada com sucesso.' });
-            } else {
-                res.status(404).json({ error: 'Vacina não encontrada ou nenhum dado novo fornecido.' });
-            }
-        } catch (error) {
-            console.error('Erro ao atualizar vacina:', error);
-            res.status(500).json({ error: 'Erro interno ao atualizar vacina.', details: error.message });
-        }
-    });
+//             if (result.changes > 0) {
+//                 res.status(200).json({ message: 'Vacina atualizada com sucesso.' });
+//             } else {
+//                 res.status(404).json({ error: 'Vacina não encontrada ou nenhum dado novo fornecido.' });
+//             }
+//         } catch (error) {
+//             console.error('Erro ao atualizar vacina:', error);
+//             res.status(500).json({ error: 'Erro interno ao atualizar vacina.', details: error.message });
+//         }
+//     });
 
-    // DELETE /vacinas/:id - Excluir vacina
+//     // DELETE /vacinas/:id - Excluir vacina
    
-    router.delete('/:id', (req, res) => {
-        const { id } = req.params;
-        try {
+//     router.delete('/:id', (req, res) => {
+//         const { id } = req.params;
+//         try {
            
-            const result = db.prepare('DELETE FROM vacinas WHERE id = ?').run(id);
-            if (result.changes > 0) {
-                res.status(200).json({ message: 'Vacina excluída com sucesso.' });
-            } else {
-                res.status(404).json({ error: 'Vacina não encontrada.' });
-            }
-        } catch (error) {
+//             const result = db.prepare('DELETE FROM vacinas WHERE id = ?').run(id);
+//             if (result.changes > 0) {
+//                 res.status(200).json({ message: 'Vacina excluída com sucesso.' });
+//             } else {
+//                 res.status(404).json({ error: 'Vacina não encontrada.' });
+//             }
+//         } catch (error) {
            
-            if (error.message.includes('FOREIGN KEY constraint failed')) {
-                return res.status(409).json({ error: 'Não é possível excluir: existem agendamentos ou estoques associados a esta vacina.', details: error.message });
-            }
-            console.error('Erro ao excluir vacina:', error);
-            res.status(500).json({ error: 'Erro interno ao excluir vacina.', details: error.message });
-        }
-    });
+//             if (error.message.includes('FOREIGN KEY constraint failed')) {
+//                 return res.status(409).json({ error: 'Não é possível excluir: existem agendamentos ou estoques associados a esta vacina.', details: error.message });
+//             }
+//             console.error('Erro ao excluir vacina:', error);
+//             res.status(500).json({ error: 'Erro interno ao excluir vacina.', details: error.message });
+//         }
+//     });
     
-    return router;
-};
+//     return router;
+// };

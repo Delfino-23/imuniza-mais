@@ -1,4 +1,6 @@
 import Vacinas from '../models/Vacinas.js';
+import Estoque from '../models/Estoque.js';
+import { capitalizarNome } from '../utils/formatarNome.js';
 
 export const listarVacinas = async (req, res) => {
     try {
@@ -25,24 +27,56 @@ export const listarVacinaPorId = async (req, res) => {
 }
 
 export const criarVacina = async (req, res) => {
+    const t = await Vacinas.sequelize.transaction();
+
     try {
-        const { nome, descricao } = req.body;
-        if (!nome || !descricao) {
-            return res.status(400).json({ error: 'Nome e descrição não podem ser vazios' });
+        const { nome, fabricante, validade, postoId } = req.body;
+
+        if (!nome || !fabricante || !validade || !postoId) {
+            await t.rollback(); // Cancelamos se faltar dados
+            return res.status(400).json({ error: 'Todos os campos são obrigatórios, incluindo o postoId' });
         }
 
-        const vacinaExistente = await Vacinas.findOne({ where: { nome } });
+        const nomeFormatado = typeof capitalizarNome === 'function' ? capitalizarNome(nome) : nome;
+        const fabricanteFormatado = typeof capitalizarNome === 'function' ? capitalizarNome(fabricante) : fabricante;
+
+        const vacinaExistente = await Vacinas.findOne({ where: { nome: nomeFormatado } });
         if (vacinaExistente) {
+            await t.rollback();
             return res.status(400).json({ error: 'Já existe uma vacina com esse nome' });
         }
 
-        const novaVacina = await Vacinas.create({ nome, descricao });
-        console.log('Vacina criada: ', novaVacina);
-        res.status(201).json({ message: 'Vacina criada com sucesso' });
+        const novaVacina = await Vacinas.create({
+            nome: nomeFormatado,
+            fabricante: fabricanteFormatado,
+            validade
+        }, { transaction: t });
+
+        await Estoque.create({
+            postoId,
+            vacinaId: novaVacina.id,
+            quantidade: 10
+        }, { transaction: t });
+        await t.commit();
+
+        const vacinaData = novaVacina.toJSON();
+        const dataApenas = new Date(vacinaData.validade).toISOString().split('T')[0];
+
+        console.log('Vacina criada: ', novaVacina.id);
+
+        return res.status(201).json({
+            message: 'Vacina criada e estoque atualizado com sucesso',
+            vacina: {
+                ...vacinaData,
+                validade: dataApenas
+            }
+        });
+
     } catch (error) {
+        if (t) await t.rollback();
         console.error('Erro ao criar vacina: ', error);
-        res.status(500).json({
-            error: "Erro ao criar vacina",
+        return res.status(500).json({
+            error: "Erro interno ao criar vacina",
             details: error.message
         });
     }
@@ -51,7 +85,7 @@ export const criarVacina = async (req, res) => {
 export const atualizarVacina = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nome, descricao } = req.body;
+        const { nome, fabricante, validade } = req.body;
 
         const vacina = await Vacinas.findByPk(id);
         if (!vacina) {
@@ -60,7 +94,8 @@ export const atualizarVacina = async (req, res) => {
 
         await vacina.update({
             nome: nome || vacina.nome,
-            descricao: descricao || vacina.descricao
+            fabricante: fabricante || vacina.fabricante,
+            validade: validade || vacina.validade
         });
 
         res.json({ message: 'Vacina atualizada com sucesso' })

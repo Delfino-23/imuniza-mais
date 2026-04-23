@@ -5,7 +5,7 @@ import {
     excluirPosto, 
     listarPostoPorId, 
     listarPostos 
-} from '../controllers/postoController';
+} from '../controllers/postoController.js';
 
 const router = express.Router();
 

@@ -1,4 +1,4 @@
-import PostosSaude from "../models/PostosSaude";
+import PostosSaude from "../models/PostosSaude.js";
 
 export const listarPostos = async (req, res) => {
     try {

@@ -21,7 +21,7 @@ const Vacinas = sequelize.define('vacinas', {
     }
 }, {
     tableName: 'vacinas',
-    timestamps: true
+    timestamps: false
 });
 
 export default Vacinas;

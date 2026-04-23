@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import Database from 'better-sqlite3'; 
+import Database from 'better-sqlite3';
 import './models/index.js'
 
 // Rotas
@@ -23,10 +23,10 @@ app.use(express.static('public'));
 
 // Página inicial
 app.get('/', (req, res) => {
-    res.sendFile('vacinacao.html', { root: 'public' }); 
+    res.sendFile('vacinacao.html', { root: 'public' });
 });
 
- //ROTA DO GRÁFICO — TOTAL DE VACINAS EM ESTOQUE GLOBAL
+//ROTA DO GRÁFICO — TOTAL DE VACINAS EM ESTOQUE GLOBAL
 
 app.get('/gestao/dados', (req, res) => {
     try {
@@ -37,7 +37,7 @@ app.get('/gestao/dados', (req, res) => {
 
         res.json({
             totalCidadaos,
-            totalVacinasEmEstoque, 
+            totalVacinasEmEstoque,
             totalAgendamentos
         });
 
@@ -126,22 +126,22 @@ app.get('/gestao/dados', (req, res) => {
             FOREIGN KEY (agendamentoId) REFERENCES agendamentos(id) ON DELETE CASCADE
         );
     `);
-    
+
     //INSERÇÕES INICIAIS
-    
+
     //STATUS
     const statusCount = db.prepare('SELECT COUNT(*) AS c FROM statuses').get().c;
     if (statusCount === 0) {
-        db.prepare("INSERT INTO statuses (descricao) VALUES ('Agendado')").run();  
-        db.prepare("INSERT INTO statuses (descricao) VALUES ('Realizado')").run(); 
-        db.prepare("INSERT INTO statuses (descricao) VALUES ('Cancelado')").run(); 
+        db.prepare("INSERT INTO statuses (descricao) VALUES ('Agendado')").run();
+        db.prepare("INSERT INTO statuses (descricao) VALUES ('Realizado')").run();
+        db.prepare("INSERT INTO statuses (descricao) VALUES ('Cancelado')").run();
     }
-    
+
     const cidadaoCount = db.prepare('SELECT COUNT(*) AS c FROM cidadaos').get().c;
     if (cidadaoCount === 0) {
         db.prepare(`INSERT INTO cidadaos (nome, cpf, telefone, email, endereco) VALUES ('João Silva', '12345678901', '999988888', 'joao@email.com', 'Rua A, 123')`).run();
     }
-    
+
     const vacinaCount = db.prepare('SELECT COUNT(*) AS c FROM vacinas').get().c;
     if (vacinaCount === 0) {
         db.prepare(`INSERT INTO vacinas (nome, fabricante, validade) VALUES ('Vacina da Gripe', 'Butantan', '2026-12-31')`).run();
@@ -151,15 +151,15 @@ app.get('/gestao/dados', (req, res) => {
     if (postoCount === 0) {
         db.prepare(`INSERT INTO postos_saude (nome, endereco) VALUES ('Posto Central', 'Avenida Principal, 456')`).run();
     }
-    
+
     const estoqueCount = db.prepare('SELECT COUNT(*) AS c FROM estoque').get().c;
     if (estoqueCount === 0) {
         const vac = db.prepare('SELECT id FROM vacinas LIMIT 1').get();
         const pos = db.prepare('SELECT id FROM postos_saude LIMIT 1').get();
-        
+
         if (vac && pos) {
-             console.log("Criando estoque inicial (10 doses) para o Posto 1 / Vacina 1...");
-             db.prepare("INSERT INTO estoque (postoId, vacinaId, quantidade) VALUES (?, ?, 10)").run(pos.id, vac.id);
+            console.log("Criando estoque inicial (10 doses) para o Posto 1 / Vacina 1...");
+            db.prepare("INSERT INTO estoque (postoId, vacinaId, quantidade) VALUES (?, ?, 10)").run(pos.id, vac.id);
         }
     }
 
@@ -168,7 +168,7 @@ app.get('/gestao/dados', (req, res) => {
         const cid = db.prepare('SELECT id FROM cidadaos LIMIT 1').get();
         const vac = db.prepare('SELECT id FROM vacinas LIMIT 1').get();
         const pos = db.prepare('SELECT id FROM postos_saude LIMIT 1').get();
-        const sts = 1; 
+        const sts = 1;
 
         if (cid && vac && pos) {
             db.prepare(`
@@ -185,8 +185,8 @@ app.get('/gestao/dados', (req, res) => {
 //ROTAS
 
 app.use('/cidadaos', criarCidadaoRouter);
-app.use('/vacinas', criarVacinaRouter(db));
-app.use('/postos', criarPostoRouter(db));
+app.use('/vacinas', criarVacinaRouter);
+app.use('/postos', criarPostoRouter);
 app.use('/agendamentos', criarAgendamentoRouter);
 
 // Servidor
