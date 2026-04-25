@@ -10,14 +10,14 @@ import Cidadaos from './Cidadaos.js';
 Agendamentos.belongsTo(PostosSaude, { foreignKey: 'postoId' });
 Agendamentos.belongsTo(Vacinas, { foreignKey: 'vacinaId' });
 Agendamentos.belongsTo(Status, { foreignKey: 'statusId' });
-Agendamentos.belongsTo(Cidadaos, { foreignKey: 'cidadaoId' });
+Agendamentos.belongsTo(Cidadaos, { foreignKey: 'cidadaoCpf', targetKey: 'cpf' });
 
 // Estoque relations
 Estoque.belongsTo(PostosSaude, { foreignKey: 'postoId' });
 Estoque.belongsTo(Vacinas, { foreignKey: 'vacinaId' });
 
 // HistoricoVacinal relations
-HistoricoVacinal.belongsTo(Cidadaos, { foreignKey: 'cidadaoId' });
+HistoricoVacinal.belongsTo(Cidadaos, { foreignKey: 'cidadaoCpf', targetKey: 'cpf' });
 HistoricoVacinal.belongsTo(Vacinas, { foreignKey: 'vacinaId' });
 HistoricoVacinal.belongsTo(Agendamentos, { foreignKey: 'agendamentoId' });
 

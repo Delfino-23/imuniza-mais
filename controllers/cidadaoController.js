@@ -29,11 +29,11 @@ export const listarCidadaos = async (req, res) => {
     }
 };
 
-// Buscar cidadão por ID
-export const listarCidadaoPorId = async (req, res) => {
+// Buscar cidadão por CPF
+export const listarCidadaoPorCpf = async (req, res) => {
     try {
-        const { id } = req.params;
-        const cidadao = await Cidadao.findByPk(id);
+        const { cpf } = req.params;
+        const cidadao = await Cidadao.findByPk(cpf);
 
         if (!cidadao) {
             return res.status(404).json({ error: 'Cidadão não encontrado' });
@@ -86,8 +86,8 @@ export const criarCidadao = async (req, res) => {
             endereco
         });
 
-        console.log(`Cidadão ${nome} cadastrado com sucesso com ID ${novoCidadao.id}`);
-        res.status(201).json({ message: 'Cidadão adicionado com sucesso', id: novoCidadao.id });
+        console.log(`Cidadão ${nome} cadastrado com sucesso com CPF ${novoCidadao.cpf}`);
+        res.status(201).json({ message: 'Cidadão adicionado com sucesso', cpf: novoCidadao.cpf });
 
     } catch (error) {
         console.error('Erro ao adicionar cidadão:', error.message);
@@ -98,10 +98,10 @@ export const criarCidadao = async (req, res) => {
 // Atualizar cidadão
 export const atualizarCidadao = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { cpf: oldCpf } = req.params;
         let { nome, cpf, telefone, email, endereco } = req.body;
 
-        const cidadao = await Cidadao.findByPk(id);
+        const cidadao = await Cidadao.findByPk(oldCpf);
         if (!cidadao) {
             return res.status(404).json({ error: 'Cidadão não encontrado' });
         }
@@ -115,7 +115,7 @@ export const atualizarCidadao = async (req, res) => {
             }
 
             const cpfExistente = await Cidadao.findOne({
-                where: { cpf, id: { [Op.ne]: id } }
+                where: { cpf, [Op.not]: { cpf: oldCpf } }
             });
             if (cpfExistente) {
                 return res.status(409).json({ error: 'Novo CPF já cadastrado em outro cidadão.' });
@@ -129,7 +129,7 @@ export const atualizarCidadao = async (req, res) => {
             }
 
             const telExistente = await Cidadao.findOne({
-                where: { telefone, id: { [Op.ne]: id } }
+                where: { telefone, [Op.not]: { cpf: oldCpf } }
             });
             if (telExistente) {
                 return res.status(409).json({ error: 'Novo Telefone já cadastrado em outro cidadão.' });
@@ -160,9 +160,9 @@ export const atualizarCidadao = async (req, res) => {
 // Excluir cidadão
 export const excluirCidadao = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { cpf } = req.params;
 
-        const cidadao = await Cidadao.findByPk(id);
+        const cidadao = await Cidadao.findByPk(cpf);
         if (!cidadao) {
             return res.status(404).json({ error: 'Cidadão não encontrado' });
         }

@@ -54,9 +54,8 @@ app.get('/gestao/dados', (req, res) => {
 
     db.exec(`
         CREATE TABLE IF NOT EXISTS cidadaos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cpf TEXT PRIMARY KEY,
             nome TEXT NOT NULL,
-            cpf TEXT UNIQUE NOT NULL,
             telefone TEXT,
             email TEXT,
             endereco TEXT
@@ -101,27 +100,27 @@ app.get('/gestao/dados', (req, res) => {
     db.exec(`
         CREATE TABLE IF NOT EXISTS agendamentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cidadaoId INTEGER NOT NULL,
+            cidadaoCpf TEXT NOT NULL,
             vacinaId INTEGER NOT NULL,
             postoId INTEGER NOT NULL,
             statusId INTEGER NOT NULL,
             dataHora DATETIME NOT NULL,
-            FOREIGN KEY (cidadaoId) REFERENCES cidadaos(id) ON DELETE CASCADE,
+            FOREIGN KEY (cidadaoCpf) REFERENCES cidadaos(cpf) ON DELETE CASCADE,
             FOREIGN KEY (vacinaId) REFERENCES vacinas(id) ON DELETE CASCADE,
             FOREIGN KEY (postoId) REFERENCES postos_saude(id) ON DELETE CASCADE,
             FOREIGN KEY (statusId) REFERENCES statuses(id),
-            UNIQUE (cidadaoId, vacinaId) 
+            UNIQUE (cidadaoCpf, vacinaId) 
         );
     `);
 
     db.exec(`
         CREATE TABLE IF NOT EXISTS historico_vacinal (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cidadaoId INTEGER NOT NULL,
+            cidadaoCpf TEXT NOT NULL,
             vacinaId INTEGER NOT NULL,
             dataAplicacao DATETIME NOT NULL,
             agendamentoId INTEGER UNIQUE NOT NULL,
-            FOREIGN KEY (cidadaoId) REFERENCES cidadaos(id) ON DELETE CASCADE,
+            FOREIGN KEY (cidadaoCpf) REFERENCES cidadaos(cpf) ON DELETE CASCADE,
             FOREIGN KEY (vacinaId) REFERENCES vacinas(id) ON DELETE CASCADE,
             FOREIGN KEY (agendamentoId) REFERENCES agendamentos(id) ON DELETE CASCADE
         );
@@ -165,16 +164,16 @@ app.get('/gestao/dados', (req, res) => {
 
     const agendamentoCount = db.prepare('SELECT COUNT(*) AS c FROM agendamentos').get().c;
     if (agendamentoCount === 0) {
-        const cid = db.prepare('SELECT id FROM cidadaos LIMIT 1').get();
+        const cid = db.prepare('SELECT cpf FROM cidadaos LIMIT 1').get();
         const vac = db.prepare('SELECT id FROM vacinas LIMIT 1').get();
         const pos = db.prepare('SELECT id FROM postos_saude LIMIT 1').get();
         const sts = 1;
 
         if (cid && vac && pos) {
             db.prepare(`
-                INSERT INTO agendamentos (cidadaoId, vacinaId, postoId, statusId, dataHora)
+                INSERT INTO agendamentos (cidadaoCpf, vacinaId, postoId, statusId, dataHora)
                 VALUES (?, ?, ?, ?, ?)
-            `).run(cid.id, vac.id, pos.id, sts, '2025-09-01T10:00');
+            `).run(cid.cpf, vac.id, pos.id, sts, '2025-09-01T10:00');
         }
     }
 

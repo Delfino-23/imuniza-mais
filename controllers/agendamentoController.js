@@ -48,16 +48,16 @@ export const listarAgendamentos = async (req, res) => {
 // Criar agendamento
 export const criarAgendamento = async (req, res) => {
     try {
-        const { cidadaoId, vacinaId, postoId, dataHora } = req.body;
+        const { cidadaoCpf, vacinaId, postoId, dataHora } = req.body;
         const statusId = req.body.statusId || STATUS_AGENDADO_ID;
 
-        if (!cidadaoId || !vacinaId || !postoId || !dataHora) {
-            return res.status(400).json({ error: 'Dados obrigatórios ausentes (cidadaoId, vacinaId, postoId, dataHora).' });
+        if (!cidadaoCpf || !vacinaId || !postoId || !dataHora) {
+            return res.status(400).json({ error: 'Dados obrigatórios ausentes (cidadaoCpf, vacinaId, postoId, dataHora).' });
         }
 
         const existingAppointment = await Agendamento.findOne({
             where: {
-                cidadaoId,
+                cidadaoCpf,
                 vacinaId
             }
         });
@@ -70,7 +70,7 @@ export const criarAgendamento = async (req, res) => {
         }
 
         const info = await Agendamento.create({
-            cidadaoId,
+            cidadaoCpf,
             vacinaId,
             postoId,
             statusId,
@@ -125,7 +125,7 @@ export const atualizarAgendamento = async (req, res) => {
         console.log("Transação iniciada")
 
         const currentAppointment = await Agendamento.findByPk(id, {
-            attributes: ['id', 'vacinaId', 'postoId', 'cidadaoId', 'statusId'],
+            attributes: ['id', 'vacinaId', 'postoId', 'cidadaoCpf', 'statusId'],
             transaction
         });
 
@@ -197,7 +197,7 @@ const processarRealizacao = async (agendamentoId, appointment, transaction) => {
     console.log('[processarRealizacao] agendamentoId:', agendamentoId);
     console.log('[processarRealizacao] appointment.dataValues:', appointment.dataValues);
 
-    const { vacinaId, cidadaoId } = appointment;
+    const { vacinaId, cidadaoCpf } = appointment;
     const postoEstoqueId = ID_POSTO_ESTOQUE_CENTRAL;
 
     console.log('[processarRealizacao] Buscando estoque...');
@@ -220,7 +220,7 @@ const processarRealizacao = async (agendamentoId, appointment, transaction) => {
 
     console.log('[processarRealizacao] Criando histórico vacinal...');
     await HistoricoVacinal.create({
-        cidadaoId: cidadaoId,
+        cidadaoCpf: cidadaoCpf,
         vacinaId: vacinaId,
         dataAplicacao: new Date(),
         agendamentoId: agendamentoId
@@ -280,7 +280,7 @@ export const excluirAgendamento = async (req, res) => {
         console.log("Transação iniciada para exclusão");
 
         const agendamento = await Agendamento.findByPk(id, {
-            attributes: ['id', 'cidadaoId', 'vacinaId', 'postoId', 'statusId'],
+            attributes: ['id', 'cidadaoCpf', 'vacinaId', 'postoId', 'statusId'],
             transaction
         });
 

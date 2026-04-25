@@ -7,9 +7,13 @@ const Agendamentos = sequelize.define('agendamentos', {
         primaryKey: true,
         autoIncrement: true
     },
-    cidadaoId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
+    cidadaoCpf: {
+        type: DataTypes.STRING(11),
+        allowNull: false,
+        validate: {
+            len: [11, 11],
+            isNumeric: true
+        }
     },
     vacinaId: {
         type: DataTypes.INTEGER,

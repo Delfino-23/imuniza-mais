@@ -94,7 +94,6 @@ async function listarCidadaos() {
 
         lista.innerHTML = cidadaos.map(cidadao => `
             <div class="resultado-lista">
-                <strong>ID:</strong> ${cidadao.id}<br>
                 <strong>Nome:</strong> ${cidadao.nome}<br>
                 <strong>CPF:</strong> ${cidadao.cpf}<br>
                 <strong>Telefone:</strong> ${cidadao.telefone}<br>
@@ -133,7 +132,7 @@ async function buscarCidadaoParaAtualizar() {
             const nomeLimpo = cidadao.nome ? cidadao.nome.replace(/[\n\r]/g, ' ').replace(/'/g, "\\'") : '';
 
             return `
-                <div class="resultado-lista" onclick="selecionarCidadaoParaAtualizar(${cidadao.id}, '${nomeLimpo}', '${cidadao.cpf}', '${cidadao.telefone}', '${cidadao.email}', '${enderecoLimpo}')">
+                <div class="resultado-lista" onclick="selecionarCidadaoParaAtualizar('${cidadao.cpf}', '${nomeLimpo}', '${cidadao.telefone}', '${cidadao.email}', '${enderecoLimpo}')">
                     <strong>Nome:</strong> ${cidadao.nome}<br>
                     <strong>CPF:</strong> ${cidadao.cpf}
                 </div>
@@ -144,8 +143,8 @@ async function buscarCidadaoParaAtualizar() {
     }
 }
 
-function selecionarCidadaoParaAtualizar(id, nome, cpf, telefone, email, endereco) {
-    document.getElementById('idAtualizar').value = id;
+function selecionarCidadaoParaAtualizar(cpf, nome, telefone, email, endereco) {
+    document.getElementById('cpfAtualizar').value = cpf;
     document.getElementById('novoNome').value = nome;
     document.getElementById('novoCpf').value = cpf;
     document.getElementById('novoTelefone').value = telefone;
@@ -156,7 +155,7 @@ function selecionarCidadaoParaAtualizar(id, nome, cpf, telefone, email, endereco
 
 async function atualizarCidadao(e) {
     e.preventDefault();
-    const id = document.getElementById('idAtualizar').value;
+    const cpf = document.getElementById('cpfAtualizar').value;
     const novoNome = document.getElementById('novoNome').value.trim();
     const novoCpf = document.getElementById('novoCpf').value.trim();
     const novoTelefone = document.getElementById('novoTelefone').value.trim();
@@ -184,7 +183,7 @@ async function atualizarCidadao(e) {
     if (novoEndereco) dados.endereco = novoEndereco;
 
     try {
-        await fazerRequisicao(`/cidadaos/${id}`, {
+        await fazerRequisicao(`/cidadaos/${cpf}`, {
             method: 'PUT',
             body: JSON.stringify(dados)
         });
@@ -218,7 +217,7 @@ async function buscarCidadaoParaExcluir() {
         }
 
         container.innerHTML = resultados.map(cidadao => `
-            <div class="resultado-lista" onclick="selecionarCidadaoParaExcluir(${cidadao.id}, '${cidadao.nome}')">
+            <div class="resultado-lista" onclick="selecionarCidadaoParaExcluir('${cidadao.cpf}', '${cidadao.nome}')">
                 <strong>Nome:</strong> ${cidadao.nome}<br>
                 <strong>CPF:</strong> ${cidadao.cpf}
             </div>
@@ -228,8 +227,8 @@ async function buscarCidadaoParaExcluir() {
     }
 }
 
-function selecionarCidadaoParaExcluir(id, nome) {
-    document.getElementById('idExcluir').value = id;
+function selecionarCidadaoParaExcluir(cpf, nome) {
+    document.getElementById('cpfExcluir').value = cpf;
     document.getElementById('nomeSelecionadoExcluir').textContent = nome;
     document.getElementById('excluirForm').style.display = 'block';
 }
@@ -239,10 +238,10 @@ async function excluirCidadao(e) {
     const confirmacao = confirm('Tem certeza que deseja excluir este cidadão?');
     if (!confirmacao) return;
 
-    const id = document.getElementById('idExcluir').value;
+    const cpf = document.getElementById('cpfExcluir').value;
 
     try {
-        await fazerRequisicao(`/cidadaos/${id}`, { method: 'DELETE' });
+        await fazerRequisicao(`/cidadaos/${cpf}`, { method: 'DELETE' });
         mostrarMensagem('mensagemExcluir', 'Cidadão excluído com sucesso!', 'success');
         document.getElementById('excluirForm').style.display = 'none';
         document.getElementById('resultadoBuscaExcluir').innerHTML = '';

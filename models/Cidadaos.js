@@ -2,18 +2,19 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
 const Cidadaos = sequelize.define('cidadaos', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
     nome: {
         type: DataTypes.STRING,
         allowNull: false
     },
     cpf: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(11),
         allowNull: false,
+        primaryKey: true,
+        unique: true,
+        validate: {
+            len: [11, 11],
+            isNumeric: true
+        }
     },
     telefone: {
         type: DataTypes.STRING,

@@ -1,18 +1,18 @@
 import express from 'express';
-import { 
-    listarCidadaos, 
-    listarCidadaoPorId, 
-    criarCidadao, 
-    atualizarCidadao, 
-    excluirCidadao 
+import {
+    listarCidadaos,
+    listarCidadaoPorCpf,
+    criarCidadao,
+    atualizarCidadao,
+    excluirCidadao
 } from '../controllers/cidadaoController.js';
 
 const router = express.Router();
 
 router.get('/', listarCidadaos);
-router.get('/:id', listarCidadaoPorId);
+router.get('/:cpf', listarCidadaoPorCpf);
 router.post('/', criarCidadao);
-router.put('/:id', atualizarCidadao);
-router.delete('/:id', excluirCidadao);
+router.put('/:cpf', atualizarCidadao);
+router.delete('/:cpf', excluirCidadao);
 
 export default router;

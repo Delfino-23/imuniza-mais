@@ -43,7 +43,7 @@ async function carregarDadosParaAgendamento() {
         const cidadaoSelect = document.getElementById('cidadaoSelect');
         cidadaoSelect.innerHTML = '<option value="">Selecione um cidadão</option>';
         cidadaos.forEach(c => {
-            cidadaoSelect.innerHTML += `<option value="${c.id}">${c.nome} - ${c.cpf}</option>`;
+            cidadaoSelect.innerHTML += `<option value="${c.cpf}">${c.nome} - ${c.cpf}</option>`;
         });
 
         const vacinaSelect = document.getElementById('vacinaSelect');
@@ -69,7 +69,7 @@ async function cadastrarAgendamento(e) {
     e.preventDefault();
 
     const dados = {
-        cidadaoId: parseInt(document.getElementById('cidadaoSelect').value),
+        cidadaoCpf: document.getElementById('cidadaoSelect').value,
         vacinaId: parseInt(document.getElementById('vacinaSelect').value),
         postoId: parseInt(document.getElementById('postoSelect').value),
         statusId: parseInt(document.getElementById('statusSelect').value),
@@ -179,7 +179,7 @@ let isUpdating = false;
 async function atualizarAgendamento(e) {
     e.preventDefault();
 
-    if (isUpdating){
+    if (isUpdating) {
         console.log('Atualização já em andamento...');
         return;
     }
@@ -193,7 +193,7 @@ async function atualizarAgendamento(e) {
     isUpdating = true;
 
     try {
-    
+
         const dados = await fazerRequisicao(`/agendamentos/${id}`, {
             method: 'PUT',
             body: JSON.stringify({ statusId })
