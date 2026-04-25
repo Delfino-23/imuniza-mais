@@ -114,8 +114,8 @@ export const atualizarCidadao = async (req, res) => {
                 return res.status(400).json({ error: 'CPF inválido. Deve conter exatamente 11 dígitos numéricos.' });
             }
 
-            const cpfExistente = await Cidadao.findOne({ 
-                where: { cpf, id: { [Op.ne]: id } } 
+            const cpfExistente = await Cidadao.findOne({
+                where: { cpf, id: { [Op.ne]: id } }
             });
             if (cpfExistente) {
                 return res.status(409).json({ error: 'Novo CPF já cadastrado em outro cidadão.' });
@@ -128,8 +128,8 @@ export const atualizarCidadao = async (req, res) => {
                 return res.status(400).json({ error: 'Telefone inválido. Deve conter exatamente 11 dígitos numéricos.' });
             }
 
-            const telExistente = await Cidadao.findOne({ 
-                where: { telefone, id: { [Op.ne]: id } } 
+            const telExistente = await Cidadao.findOne({
+                where: { telefone, id: { [Op.ne]: id } }
             });
             if (telExistente) {
                 return res.status(409).json({ error: 'Novo Telefone já cadastrado em outro cidadão.' });
@@ -172,9 +172,9 @@ export const excluirCidadao = async (req, res) => {
 
     } catch (error) {
         console.error('Erro ao excluir cidadão:', error.message);
-        res.status(500).json({ 
-            error: 'Erro ao excluir cidadão. Verifique se há agendamentos pendentes.', 
-            details: error.message 
+        res.status(500).json({
+            error: 'Erro ao excluir cidadão. Verifique se há agendamentos pendentes.',
+            details: error.message
         });
     }
 };

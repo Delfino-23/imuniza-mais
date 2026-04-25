@@ -8,9 +8,9 @@ import HistoricoVacinal from "../models/HistoricoVacinal.js";
 import sequelize from "../config/database.js";
 
 const STATUS_AGENDADO_ID = 1;
-const STATUS_REALIZADO_ID = 2; 
+const STATUS_REALIZADO_ID = 2;
 const STATUS_CANCELADO_ID = 3;
-const ID_POSTO_ESTOQUE_CENTRAL = 1; 
+const ID_POSTO_ESTOQUE_CENTRAL = 1;
 
 // Listar agendamentos
 export const listarAgendamentos = async (req, res) => {
@@ -49,21 +49,21 @@ export const listarAgendamentos = async (req, res) => {
 export const criarAgendamento = async (req, res) => {
     try {
         const { cidadaoId, vacinaId, postoId, dataHora } = req.body;
-        const statusId = req.body.statusId || STATUS_AGENDADO_ID; 
+        const statusId = req.body.statusId || STATUS_AGENDADO_ID;
 
         if (!cidadaoId || !vacinaId || !postoId || !dataHora) {
             return res.status(400).json({ error: 'Dados obrigatórios ausentes (cidadaoId, vacinaId, postoId, dataHora).' });
         }
-        
+
         const existingAppointment = await Agendamento.findOne({
             where: {
                 cidadaoId,
                 vacinaId
             }
         });
-        
+
         if (existingAppointment) {
-            return res.status(409).json({ 
+            return res.status(409).json({
                 error: `Este cidadão já possui um agendamento para esta vacina com status '${existingAppointment.descricao}'.`,
                 details: 'Um novo agendamento só é permitido se o anterior estiver Realizado ou Cancelado.'
             });
@@ -86,15 +86,15 @@ export const criarAgendamento = async (req, res) => {
 }
 
 const tratarErro = (error, res) => {
-    const status = error.message.includes('Estoque insuficiente') ? 409 : 
-                   error.message.includes('Agendamento não encontrado') ? 404 : 
-                   500;
-    
+    const status = error.message.includes('Estoque insuficiente') ? 409 :
+        error.message.includes('Agendamento não encontrado') ? 404 :
+            500;
+
     console.error('Erro ao processar atualização de agendamento:', error.message);
-    
-    res.status(status).json({ 
+
+    res.status(status).json({
         error: error.message,
-        details: error.message 
+        details: error.message
     });
 };
 
@@ -147,12 +147,12 @@ export const atualizarAgendamento = async (req, res) => {
         console.log('Está virando realizado?', isBecomingRealizado);
         console.log('Está deixando de ser realizado?', isNoLongerRealizado);
 
-        console.log('=== ANTES DO UPDATE ===');     
+        console.log('=== ANTES DO UPDATE ===');
         await currentAppointment.update(
             { statusId: newStatusId },
             { transaction }
         );
-        console.log('=== DEPOIS DO UPDATE ===');  
+        console.log('=== DEPOIS DO UPDATE ===');
 
         // Se mudou para "Realizado"
         if (isBecomingRealizado) {
@@ -196,7 +196,7 @@ const processarRealizacao = async (agendamentoId, appointment, transaction) => {
     console.log('[processarRealizacao] Início');
     console.log('[processarRealizacao] agendamentoId:', agendamentoId);
     console.log('[processarRealizacao] appointment.dataValues:', appointment.dataValues);
-    
+
     const { vacinaId, cidadaoId } = appointment;
     const postoEstoqueId = ID_POSTO_ESTOQUE_CENTRAL;
 
@@ -213,7 +213,7 @@ const processarRealizacao = async (agendamentoId, appointment, transaction) => {
     if (!estoqueItem || estoqueItem.quantidade <= 0) {
         throw new Error('Estoque insuficiente ou item não encontrado no estoque central.');
     }
-    
+
     console.log('[processarRealizacao] Decrementando estoque...');
     await estoqueItem.decrement('quantidade', { by: 1, transaction });
     console.log('[processarRealizacao] Estoque decrementado');
@@ -231,10 +231,10 @@ const processarRealizacao = async (agendamentoId, appointment, transaction) => {
 const reverterRealizacao = async (agendamentoId, appointment, transaction) => {
     console.log('[reverterRealizacao] Início');
     console.log('[reverterRealizacao] agendamentoId:', agendamentoId);
-    
+
     const { vacinaId } = appointment;
     const postoEstoqueId = ID_POSTO_ESTOQUE_CENTRAL;
-    
+
     console.log('[reverterRealizacao] Buscando estoque...');
     const estoqueItem = await Estoque.findOne({
         where: {
@@ -267,7 +267,7 @@ export const excluirAgendamento = async (req, res) => {
 
     console.log("Iniciando exclusão de agendamento");
     console.log("ID do agendamento:", id);
-    
+
     // Previnir requisições duplicadas
     const requestKey = `${id}-${Agendamento.name}-delete`;
     if (processingRequests.has(requestKey)) {
@@ -286,7 +286,7 @@ export const excluirAgendamento = async (req, res) => {
 
         console.log("Agendamento encontrado: ", agendamento?.dataValues);
 
-        if (!agendamento){
+        if (!agendamento) {
             await transaction.rollback();
             return res.status(404).json({ error: 'Agendamento não encontrado' });
         }
@@ -299,7 +299,7 @@ export const excluirAgendamento = async (req, res) => {
         await transaction.commit();
         console.log("=== DEPOIS DO COMMIT ===");
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Agendamento excluído com sucesso',
             id: id
         });

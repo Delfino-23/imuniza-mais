@@ -128,12 +128,17 @@ async function buscarCidadaoParaAtualizar() {
             return;
         }
 
-        container.innerHTML = resultados.map(cidadao => `
-            <div class="resultado-lista" onclick="selecionarCidadaoParaAtualizar(${cidadao.id}, '${cidadao.nome}', '${cidadao.cpf}', '${cidadao.telefone}', '${cidadao.email}', '${cidadao.endereco}')">
-                <strong>Nome:</strong> ${cidadao.nome}<br>
-                <strong>CPF:</strong> ${cidadao.cpf}
-            </div>
-        `).join('');
+        container.innerHTML = resultados.map(cidadao => {
+            const enderecoLimpo = cidadao.endereco ? cidadao.endereco.replace(/[\n\r]/g, ' ').replace(/'/g, "\\'") : '';
+            const nomeLimpo = cidadao.nome ? cidadao.nome.replace(/[\n\r]/g, ' ').replace(/'/g, "\\'") : '';
+
+            return `
+                <div class="resultado-lista" onclick="selecionarCidadaoParaAtualizar(${cidadao.id}, '${nomeLimpo}', '${cidadao.cpf}', '${cidadao.telefone}', '${cidadao.email}', '${enderecoLimpo}')">
+                    <strong>Nome:</strong> ${cidadao.nome}<br>
+                    <strong>CPF:</strong> ${cidadao.cpf}
+                </div>
+            `
+        }).join('');
     } catch (erro) {
         mostrarMensagem('mensagemAtualizar', `Erro ao buscar cidadão: ${erro.message}`, 'error');
     }
