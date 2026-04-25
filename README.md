@@ -69,3 +69,9 @@ Para contribuir, faça um fork do projeto e envie um pull request com suas alter
 
 Este projeto é de uso educacional.</content>
 <parameter name="filePath">c:\dev\TCC\projeto-vacinacao\README.md
+
+## Integrantes
+- Carlos Eduardo Alves da Silva Delfino
+- Fabiane Manuelly Lima Benedito
+- Júlio César Zanco Botéchia
+- Vinícius Rafael Covolam
