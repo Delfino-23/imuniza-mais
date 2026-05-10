@@ -7,6 +7,7 @@ import Vacinas from './Vacinas.js';
 import Cidadaos from './Cidadaos.js';
 
 // Agendamentos relations
+// CODE SMELL: associações definidas apenas por efeito colateral e não exportadas pelo módulo.
 Agendamentos.belongsTo(PostosSaude, { foreignKey: 'postoId' });
 Agendamentos.belongsTo(Vacinas, { foreignKey: 'vacinaId' });
 Agendamentos.belongsTo(Status, { foreignKey: 'statusId' });

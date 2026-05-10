@@ -1,8 +1,11 @@
 import { Sequelize } from "sequelize";
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import configJson from '../config/config.json' assert { type: 'json' };
 
-const config = JSON.parse(readFileSync(resolve('config/config.json'), 'utf-8'))['development'];
+// CODE SMELL: leitura síncrona de arquivo de configuração durante a inicialização do módulo.
+// const config = JSON.parse(readFileSync(resolve('config/config.json'), 'utf-8'))['development'];
+
+const env = process.env.NODE_ENV || 'development';
+const config = configJson[env];
 
 const sequelize = new Sequelize({
     ...config,
@@ -11,9 +14,7 @@ const sequelize = new Sequelize({
         min: 0,
         idle: 10000
     },
-    dialectOptions: {
-        busyTimeout: 30000  // Espera 30 segundos antes de dar "database locked"
-    }
+    logging: false
 });
 
 export default sequelize;

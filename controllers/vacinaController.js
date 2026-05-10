@@ -1,6 +1,7 @@
 import Vacinas from '../models/Vacinas.js';
 import Estoque from '../models/Estoque.js';
 import { capitalizarNome } from '../utils/formatarNome.js';
+import PostosSaude from '../models/PostosSaude.js';
 
 export const listarVacinas = async (req, res) => {
     try {
@@ -27,18 +28,29 @@ export const listarVacinaPorId = async (req, res) => {
 }
 
 export const criarVacina = async (req, res) => {
-    const t = await Vacinas.sequelize.transaction();
+    // CODE SMELL: transação criada diretamente pelo modelo, mas não há verificação do estado de inicialização do Sequelize.
+    // const t = await Vacinas.sequelize.transaction();
+    let transaction;
 
     try {
         const { nome, fabricante, validade, postoId } = req.body;
 
         if (!nome || !fabricante || !validade || !postoId) {
-            await t.rollback(); // Cancelamos se faltar dados
             return res.status(400).json({ error: 'Todos os campos são obrigatórios, incluindo o postoId' });
         }
 
-        const nomeFormatado = typeof capitalizarNome === 'function' ? capitalizarNome(nome) : nome;
-        const fabricanteFormatado = typeof capitalizarNome === 'function' ? capitalizarNome(fabricante) : fabricante;
+        const postoExiste = await PostosSaude.findByPk(postoId);
+        if (!postoExiste) {
+            return res.status(400).json({ error: 'Posto de saúde não encontrado com o postoId fornecido' });
+        }
+
+        t = await sequelize.transaction();
+
+        // CODE SMELL: checagem redundante de tipo para função importada, que já deve ser uma função.
+        // const nomeFormatado = typeof capitalizarNome === 'function' ? capitalizarNome(nome) : nome;
+        // const fabricanteFormatado = typeof capitalizarNome === 'function' ? capitalizarNome(fabricante) : fabricante;
+        const nomeFormatado = capitalizarNome(nome);
+        const fabricanteFormatado = capitalizarNome(fabricante);
 
         const vacinaExistente = await Vacinas.findOne({ where: { nome: nomeFormatado } });
         if (vacinaExistente) {
@@ -92,10 +104,17 @@ export const atualizarVacina = async (req, res) => {
             return res.status(404).json({ error: 'Vacina não encontrada' });
         }
 
+        // CODE SMELL: usar `||` ignora valores falsy válidos e pode causar atualização incorreta de campos.
+        // await vacina.update({
+        //     nome: nome || vacina.nome,
+        //     fabricante: fabricante || vacina.fabricante,
+        //     validade: validade || vacina.validade
+        // });
+
         await vacina.update({
-            nome: nome || vacina.nome,
-            fabricante: fabricante || vacina.fabricante,
-            validade: validade || vacina.validade
+            nome: nome ?? vacina.nome,
+            fabricante: fabricante ?? vacina.fabricante,
+            validade: validade ?? vacina.validade
         });
 
         res.json({ message: 'Vacina atualizada com sucesso' })

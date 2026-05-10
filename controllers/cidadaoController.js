@@ -51,6 +51,15 @@ export const criarCidadao = async (req, res) => {
     try {
         let { nome, cpf, telefone, email, endereco } = req.body;
 
+        // CODE SMELL: não valida se os campos obrigatórios existem antes de aplicar transformações de string.
+        // nome = capitalizarNome(nome);
+        // cpf = limparCpf(cpf);
+        // telefone = telefone.replace(/\D/g, '');
+
+        if (!nome || !cpf || !telefone || !email) {
+            return res.status(400).json({ error: 'Campos obrigatórios faltando. Nome, CPF, telefone e email são necessários.' });
+        }
+
         nome = capitalizarNome(nome);
         cpf = limparCpf(cpf);
         telefone = telefone.replace(/\D/g, '');
@@ -67,9 +76,19 @@ export const criarCidadao = async (req, res) => {
         }
 
         // Verificar duplicidade
-        const cpfExistente = await Cidadao.findOne({ where: { cpf } });
+        // CODE SMELL: validação de duplicidade faz duas consultas separadas, o que aumenta o custo de banco desnecessariamente.
+        // const cpfExistente = await Cidadao.findOne({ where: { cpf } });
+        // if (cpfExistente) {
+        //     return res.status(409).json({ error: 'CPF já cadastrado.' });
+        // }
+        const cpfExistente = await Cidadao.findOne({
+            where: {
+                [Op.or]: [{ cpf: cpfLimpo }, { telefone: telLimpo }]
+            }
+        });
         if (cpfExistente) {
-            return res.status(409).json({ error: 'CPF já cadastrado.' });
+            const campo = cpfExistente.cpf === cpfLimpo ? 'CPF' : 'Telefone';
+            return res.status(409).json({ error: `${campo} já cadastrado no sistema.` });
         }
 
         const telefoneExistente = await Cidadao.findOne({ where: { telefone } });

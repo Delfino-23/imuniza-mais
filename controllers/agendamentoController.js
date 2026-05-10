@@ -10,6 +10,7 @@ import sequelize from "../config/database.js";
 const STATUS_AGENDADO_ID = 1;
 const STATUS_REALIZADO_ID = 2;
 const STATUS_CANCELADO_ID = 3;
+// CODE SMELL: valores de status e o ID do posto central estão hard-coded no controlador.
 const ID_POSTO_ESTOQUE_CENTRAL = 1;
 
 // Listar agendamentos
@@ -62,9 +63,23 @@ export const criarAgendamento = async (req, res) => {
             }
         });
 
+        // CODE SMELL: `existingAppointment.descricao` não é carregado nesta consulta de Agendamento.
+        // if (existingAppointment) {
+        //     return res.status(409).json({
+        //         error: `Este cidadão já possui um agendamento para esta vacina com status '${existingAppointment.descricao}'.`,
+        //         details: 'Um novo agendamento só é permitido se o anterior estiver Realizado ou Cancelado.'
+        //     });
+        // }
+
+        const existingAppointment = await Agendamento.findOne({
+            where: { cidadaoCpf, vacinaId },
+            include: [{ model: Status, attributes: ['descricao'] }]
+        });
+
         if (existingAppointment) {
+            const statusDescricao = existingAppointment.status?.descricao || 'desconecido';
             return res.status(409).json({
-                error: `Este cidadão já possui um agendamento para esta vacina com status '${existingAppointment.descricao}'.`,
+                error: `Este cidadão já possui um agendamento para esta vacina com status '${statusDescricao}'.`,
                 details: 'Um novo agendamento só é permitido se o anterior estiver Realizado ou Cancelado.'
             });
         }
@@ -98,6 +113,7 @@ const tratarErro = (error, res) => {
     });
 };
 
+// CODE SMELL: Set usada para bloquear requisições duplicadas, mas as requisições nunca são adicionadas a ele.
 const processingRequests = new Set();
 
 // Atualizar agendamento
@@ -105,9 +121,10 @@ export const atualizarAgendamento = async (req, res) => {
     const { id } = req.params;
     const newStatusId = parseInt(req.body.statusId);
 
-    console.log("inicio da atualização")
-    console.log("ID do agendamento:", id);
-    console.log("Novo status ID:", newStatusId);
+    // CODE SMELL: logs de depuração foram deixados diretamente no fluxo de controle.
+    // console.log("inicio da atualização")
+    // console.log("ID do agendamento:", id);
+    // console.log("Novo status ID:", newStatusId);
 
     if (isNaN(newStatusId)) {
         return res.status(400).json({ error: "Status ID inválido." });
@@ -118,6 +135,7 @@ export const atualizarAgendamento = async (req, res) => {
     if (processingRequests.has(requestKey)) {
         return res.status(409).json({ error: "Requisição já está sendo processada. Por favor, aguarde." });
     }
+    processingRequests.add(requestKey);
     let transaction; // CORRIGIDO: adicionado let
 
     try {
@@ -197,15 +215,13 @@ const processarRealizacao = async (agendamentoId, appointment, transaction) => {
     console.log('[processarRealizacao] agendamentoId:', agendamentoId);
     console.log('[processarRealizacao] appointment.dataValues:', appointment.dataValues);
 
-    const { vacinaId, cidadaoCpf } = appointment;
-    const postoEstoqueId = ID_POSTO_ESTOQUE_CENTRAL;
+    const { vacinaId, cidadaoCpf, postoId } = appointment;
+    // CODE SMELL: o estoque é sempre consultado usando um posto central fixo, independente do agendamento real.
+    // const postoEstoqueId = ID_POSTO_ESTOQUE_CENTRAL;
 
     console.log('[processarRealizacao] Buscando estoque...');
     const estoqueItem = await Estoque.findOne({
-        where: {
-            postoId: postoEstoqueId,
-            vacinaId: vacinaId
-        },
+        where: { postoId, vacinaId },
         transaction
     });
     console.log('[processarRealizacao] Estoque encontrado:', estoqueItem?.dataValues);
