@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import configJson from '../config/config.json' assert { type: 'json' };
+import configJson from '../config/config.json' with { type: 'json' };
 
 // CODE SMELL: leitura síncrona de arquivo de configuração durante a inicialização do módulo.
 // const config = JSON.parse(readFileSync(resolve('config/config.json'), 'utf-8'))['development'];

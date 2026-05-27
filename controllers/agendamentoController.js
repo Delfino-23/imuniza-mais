@@ -56,12 +56,12 @@ export const criarAgendamento = async (req, res) => {
             return res.status(400).json({ error: 'Dados obrigatórios ausentes (cidadaoCpf, vacinaId, postoId, dataHora).' });
         }
 
-        const existingAppointment = await Agendamento.findOne({
-            where: {
-                cidadaoCpf,
-                vacinaId
-            }
-        });
+        // const existingAppointment = await Agendamento.findOne({
+        //     where: {
+        //         cidadaoCpf,
+        //         vacinaId
+        //     }
+        // });
 
         // CODE SMELL: `existingAppointment.descricao` não é carregado nesta consulta de Agendamento.
         // if (existingAppointment) {
