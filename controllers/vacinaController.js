@@ -2,6 +2,7 @@ import Vacinas from '../models/Vacinas.js';
 import Estoque from '../models/Estoque.js';
 import { capitalizarNome } from '../utils/formatarNome.js';
 import PostosSaude from '../models/PostosSaude.js';
+import sequelize from '../config/database.js';
 
 export const listarVacinas = async (req, res) => {
     try {
@@ -31,6 +32,7 @@ export const criarVacina = async (req, res) => {
     // CODE SMELL: transação criada diretamente pelo modelo, mas não há verificação do estado de inicialização do Sequelize.
     // const t = await Vacinas.sequelize.transaction();
     let transaction;
+    let t;
 
     try {
         const { nome, fabricante, validade, postoId } = req.body;

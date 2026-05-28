@@ -83,11 +83,11 @@ export const criarCidadao = async (req, res) => {
         // }
         const cpfExistente = await Cidadao.findOne({
             where: {
-                [Op.or]: [{ cpf: cpfLimpo }, { telefone: telLimpo }]
+                [Op.or]: [{ cpf: cpf }, { telefone: telefone }]
             }
         });
         if (cpfExistente) {
-            const campo = cpfExistente.cpf === cpfLimpo ? 'CPF' : 'Telefone';
+            const campo = cpfExistente.cpf === cpf ? 'CPF' : 'Telefone';
             return res.status(409).json({ error: `${campo} já cadastrado no sistema.` });
         }
 

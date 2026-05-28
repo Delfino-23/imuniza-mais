@@ -26,13 +26,15 @@ export const listarAgendamentos = async (req, res) => {
             ]
         });
 
+        console.log(agendamentos[0]?.toJSON());
+
         const dataFormatada = agendamentos.map(item => ({
             id: item.id,
             cidadaoNome: item.cidadao?.nome,
             cidadaoCPF: item.cidadao?.cpf,
             cidadaoEndereco: item.cidadao?.endereco,
-            vacinaNome: item.vacina?.nome,
-            vacinaFabricante: item.vacina?.fabricante,
+            vacinaNome: item.Vacina?.nome,
+            vacinaFabricante: item.Vacina?.fabricante,
             postoNome: item.postos_saude?.nome,
             postoEndereco: item.postos_saude?.endereco,
             statusDescricao: item.status?.descricao,
