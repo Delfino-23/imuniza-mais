@@ -159,14 +159,19 @@ export const atualizarCidadao = async (req, res) => {
             return res.status(400).json({ error: 'Novo Email inválido. Verifique o formato.' });
         }
 
-        // Atualizar apenas os campos fornecidos
         await cidadao.update({
-            ...(nome && { nome }),
-            ...(cpf && { cpf }),
-            ...(telefone && { telefone }),
-            ...(email && { email }),
-            ...(endereco && { endereco })
+            nome: nome ?? cidadao.nome,
+            telefone: telefone ?? cidadao.telefone,
+            email: email ?? cidadao.email,
+            endereco: endereco ?? cidadao.endereco
         });
+
+        if (cpf && cpf !== oldCpf) {
+            await Cidadao.update(
+                { cpf: cpf },
+                { where: { cpf: oldCpf } }
+            );
+        }
 
         res.json({ message: 'Cidadão atualizado com sucesso' });
 
